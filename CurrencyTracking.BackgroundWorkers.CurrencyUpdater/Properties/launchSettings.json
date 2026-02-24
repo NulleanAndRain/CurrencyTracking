@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "CurrencyTracking.BackgroundWorkers.CurrencyUpdater": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}
