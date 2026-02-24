@@ -13,5 +13,5 @@ public class User
 	[Column("password")]
 	public string PasswordHash {  get; set; }= string.Empty;
 
-	public IEnumerable<Currency> Favorites { get; set; } = new List<Currency>();
+	public IQueryable<UserFavorite> Favorites { get; set; }
 }
