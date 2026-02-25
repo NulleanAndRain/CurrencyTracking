@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.13.35931.197 d17.13
+VisualStudioVersion = 17.13.35931.197
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CurrencyTracking.UserApi", "CurrencyTracking.UserApi\CurrencyTracking.UserApi.csproj", "{56214BC6-7099-48A0-99EE-0E11A1F03AA1}"
 EndProject
@@ -28,7 +28,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{F967BD
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CurrencyTracking.BackgroundWorkers", "CurrencyTracking.BackgroundWorkers", "{BD982541-03FE-4FE1-A9F4-20C97CC52038}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CurrencyTracking.BackgroundWorkers.CurrencyUpdater", "CurrencyTracking.BackgroundWorkers.CurrencyUpdater\CurrencyTracking.BackgroundWorkers.CurrencyUpdater.csproj", "{C5FCEDD8-E6B6-4783-B77D-2FE7DE7187A2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CurrencyTracking.CurrencyUpdateWorker", "CurrencyTracking.CurrencyUpdateWorker\CurrencyTracking.CurrencyUpdateWorker.csproj", "{6EE0D990-FCAB-4436-A1DB-013E3C2D2EEA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CurrencyTracking.CurrencyServiceTests", "CurrencyTracking.CurrencyServiceTests\CurrencyTracking.CurrencyServiceTests.csproj", "{E90641FE-A5AC-4458-B755-905C0CF6DEB6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CurrencyTracking.UserServiceTetsts", "CurrencyTracking.UserServiceTetsts\CurrencyTracking.UserServiceTetsts.csproj", "{CF8BAFF4-30F2-402A-B39B-DCA9BADCBC5D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -60,10 +64,18 @@ Global
 		{D5A7F3D0-6180-4662-A86F-4A518F5C981C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D5A7F3D0-6180-4662-A86F-4A518F5C981C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D5A7F3D0-6180-4662-A86F-4A518F5C981C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C5FCEDD8-E6B6-4783-B77D-2FE7DE7187A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C5FCEDD8-E6B6-4783-B77D-2FE7DE7187A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C5FCEDD8-E6B6-4783-B77D-2FE7DE7187A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C5FCEDD8-E6B6-4783-B77D-2FE7DE7187A2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6EE0D990-FCAB-4436-A1DB-013E3C2D2EEA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6EE0D990-FCAB-4436-A1DB-013E3C2D2EEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6EE0D990-FCAB-4436-A1DB-013E3C2D2EEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6EE0D990-FCAB-4436-A1DB-013E3C2D2EEA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E90641FE-A5AC-4458-B755-905C0CF6DEB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E90641FE-A5AC-4458-B755-905C0CF6DEB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E90641FE-A5AC-4458-B755-905C0CF6DEB6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E90641FE-A5AC-4458-B755-905C0CF6DEB6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF8BAFF4-30F2-402A-B39B-DCA9BADCBC5D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF8BAFF4-30F2-402A-B39B-DCA9BADCBC5D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF8BAFF4-30F2-402A-B39B-DCA9BADCBC5D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF8BAFF4-30F2-402A-B39B-DCA9BADCBC5D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -75,7 +87,9 @@ Global
 		{01F3B629-87AA-455F-B65A-CD7C3D3DBB8A} = {F967BDAB-0DA1-4CDA-AA30-3F7096DE111A}
 		{88CE5EBE-4F27-4670-B7A9-0F620E554006} = {47727BC7-A32C-4ADB-B099-31FF10CBB30C}
 		{D5A7F3D0-6180-4662-A86F-4A518F5C981C} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
-		{C5FCEDD8-E6B6-4783-B77D-2FE7DE7187A2} = {BD982541-03FE-4FE1-A9F4-20C97CC52038}
+		{6EE0D990-FCAB-4436-A1DB-013E3C2D2EEA} = {BD982541-03FE-4FE1-A9F4-20C97CC52038}
+		{E90641FE-A5AC-4458-B755-905C0CF6DEB6} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
+		{CF8BAFF4-30F2-402A-B39B-DCA9BADCBC5D} = {47727BC7-A32C-4ADB-B099-31FF10CBB30C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BFB3B3AF-A78F-4476-8962-DD773C535C87}

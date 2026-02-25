@@ -3,14 +3,14 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CurrencyTracking.Entities.DbModels;
 
-[Index(nameof(UserId), nameof(CurrencyId), IsUnique = true)]
+[PrimaryKey(nameof(UserId), nameof(CurrencyId))]
 public class UserFavorite
 {
 	[Column("user_id")]
-	public int UserId { get; set; }
+	public Guid UserId { get; set; }
 	public User User { get; set; }
 
 	[Column("currency_id")]
-	public int CurrencyId { get; set; }
+	public string CurrencyId { get; set; }
 	public Currency Currency { get; set; }
 }

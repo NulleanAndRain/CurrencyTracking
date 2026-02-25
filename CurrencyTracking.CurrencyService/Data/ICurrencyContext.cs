@@ -7,4 +7,5 @@ public interface ICurrencyContext
 {
 	DbSet<Currency> Currencies { get; }
 	DbSet<UserFavorite> UserFavorites { get; }
+	Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
