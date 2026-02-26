@@ -1,13 +1,14 @@
 ﻿using CurrencyTracking.CurrencyService.Data;
-using CurrencyTracking.CurrencyService.Handlers;
 using Keycloak.AuthServices.Authentication;
+using Keycloak.AuthServices.Authorization;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection;
 
 namespace CurrencyTracking.CurrencyApi.Infrastructure;
 
 public static class DependencyInjectionBuilder
 {
+	public const string KeycloakSectionName = "Keycloak";
+
 	public static IServiceCollection AddServices(this WebApplicationBuilder builder)
 	{
 		var services = builder.Services;
@@ -16,20 +17,31 @@ public static class DependencyInjectionBuilder
 		services.AddEndpointsApiExplorer();
 		services.AddSwaggerGen();
 
+		services.AddLogging(cfg =>
+		{
+			cfg.AddConsole();
+			cfg.AddDebug();
+			cfg.SetMinimumLevel(LogLevel.Debug);
+		});
+
 		services.AddScoped<ICurrencyContext, CurrencyContext>();
 		services.AddDbContext<CurrencyContext>(o =>
 		{
-			o.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"),
-				x => x.MigrationsAssembly("CurrencyTracking.Migrations"));
+			o.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
 		});
 
 		services.AddMediatR(cfg =>
 		{
-			cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
-			cfg.RegisterServicesFromAssembly(typeof(GetCurrenciesQueryHandler).Assembly);
+			cfg.RegisterServicesFromAssemblies(AppDomain.CurrentDomain.GetAssemblies());
 		});
 
-		services.AddKeycloakWebApiAuthentication(builder.Configuration);
+		services.AddKeycloakWebApiAuthentication(builder.Configuration, cfg =>
+		{
+			cfg.RequireHttpsMetadata = false;
+		});
+		services.AddAuthorization()
+			.AddKeycloakAuthorization(builder.Configuration)
+			.AddAuthorizationServer(builder.Configuration);
 
 		return services;
 	}

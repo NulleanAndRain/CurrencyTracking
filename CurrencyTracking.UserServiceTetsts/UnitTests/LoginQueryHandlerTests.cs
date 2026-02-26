@@ -2,12 +2,14 @@
 using CurrencyTracking.UserService.Data;
 using CurrencyTracking.UserService.Exceptions;
 using CurrencyTracking.UserService.Handlers;
+using CurrencyTracking.UserService.Models;
 using CurrencyTracking.UserService.Queries;
 using CurrencyTracking.UserService.Utils;
 using CurrencyTracking.UserServiceTetsts.Utils;
 using Microsoft.EntityFrameworkCore;
 using Moq;
 using Moq.Protected;
+using System.Text.Json;
 
 namespace CurrencyTracking.UserServiceTetsts.UnitTests;
 
@@ -35,7 +37,12 @@ public class LoginQueryHandlerTests
 		await context.SaveChangesAsync();
 
 		var token = "token";
-		var (httpClientFactoryMock, handlerMock) = MockBuilder.GetHttpClientFactoryMock(token);
+		var jwt = new JwtModel
+		{
+			AccessToken = token,
+		};
+
+		var (httpClientFactoryMock, handlerMock) = MockBuilder.GetHttpClientFactoryMock(JsonSerializer.Serialize(jwt));
 
 		var service = new LoginQueryHandler(
 			userContext: context,
@@ -54,11 +61,11 @@ public class LoginQueryHandlerTests
 		var result = await service.Handle(query, CancellationToken.None);
 		// Assert
 		Assert.NotNull(result);
-		Assert.Equal(token, result);
+		Assert.Equal(token, result.AccessToken);
 		handlerMock.Protected().Verify(
-			"SendAsync", 
-			Times.Exactly(1), 
-			ItExpr.IsAny<HttpRequestMessage>(), 
+			"SendAsync",
+			Times.Exactly(1),
+			ItExpr.IsAny<HttpRequestMessage>(),
 			ItExpr.IsAny<CancellationToken>()
 		);
 	}

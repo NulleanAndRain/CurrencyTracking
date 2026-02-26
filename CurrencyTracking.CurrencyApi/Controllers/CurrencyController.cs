@@ -13,7 +13,7 @@ namespace CurrencyTracking.CurrencyApi.Controllers;
 public class CurrencyController(ILogger<CurrencyController> logger, IMediator mediator) : Controller
 {
 	[Authorize]
-	[HttpGet]
+	[HttpGet("favorites")]
 	public async Task<Results<Ok<IEnumerable<Currency>>, UnauthorizedHttpResult>> Get(CancellationToken cancellationToken)
 	{
 		logger.LogInformation("list tracked currencuies");

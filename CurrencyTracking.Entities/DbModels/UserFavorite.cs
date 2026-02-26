@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CurrencyTracking.Entities.DbModels;
 
+[Table("user_favorites")]
 [PrimaryKey(nameof(UserId), nameof(CurrencyId))]
 public class UserFavorite
 {

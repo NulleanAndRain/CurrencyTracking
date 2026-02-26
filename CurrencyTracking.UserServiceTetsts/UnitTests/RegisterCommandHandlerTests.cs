@@ -1,16 +1,16 @@
-﻿using CurrencyTracking.UserService.Data;
+﻿using CurrencyTracking.Entities.DbModels;
+using CurrencyTracking.UserService.Commands;
+using CurrencyTracking.UserService.Data;
 using CurrencyTracking.UserService.Handlers;
 using CurrencyTracking.UserServiceTetsts.Utils;
 using Microsoft.EntityFrameworkCore;
-using CurrencyTracking.UserService.Commands;
-using CurrencyTracking.Entities.DbModels;
 
 namespace CurrencyTracking.UserServiceTetsts.UnitTests;
 
 public class RegisterCommandHandlerTests
 {
 	[Fact]
-	public async Task Handle_ValidUser_ReturnsToken()
+	public async Task Handle_ValidUser_ReturnsUserInfo()
 	{
 		// Arrange
 		var contextOptions = new DbContextOptionsBuilder<UserContext>()
@@ -23,12 +23,13 @@ public class RegisterCommandHandlerTests
 
 		var userId = Guid.NewGuid();
 
-		var keycloakUserClientMock = MockBuilder.GetKeycloakUserClientMock(userId);
+		var (httpClientFactoryMock, handlerMock) = MockBuilder.GetHttpClientFactoryMock("token", userId.ToString());
 
 		var service = new RegisterCommandHandler(
 			userContext: context,
 			configuration: MockBuilder.GetConfigMock(),
-			userClient: keycloakUserClientMock,
+			httpClientFactory: httpClientFactoryMock,
+			tokenService: MockBuilder.GetTokenServiceMock("admin_token"),
 			logger: MockBuilder.GetLoggerMock<RegisterCommandHandler>()
 		);
 
@@ -71,12 +72,13 @@ public class RegisterCommandHandlerTests
 		await context.Users.AddAsync(user);
 		await context.SaveChangesAsync();
 
-		var keycloakUserClientMock = MockBuilder.GetKeycloakUserClientMock(userId);
+		var (httpClientFactoryMock, handlerMock) = MockBuilder.GetHttpClientFactoryMock("token", userId.ToString());
 
 		var service = new RegisterCommandHandler(
 			userContext: context,
 			configuration: MockBuilder.GetConfigMock(),
-			userClient: keycloakUserClientMock,
+			httpClientFactory: httpClientFactoryMock,
+			tokenService: MockBuilder.GetTokenServiceMock("admin_token"),
 			logger: MockBuilder.GetLoggerMock<RegisterCommandHandler>()
 		);
 

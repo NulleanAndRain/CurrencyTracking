@@ -1,0 +1,171 @@
+services:
+    postgres:
+        image: postgres:latest
+        restart: always
+        environment:
+            POSTGRES_USER: "user"
+            POSTGRES_PASSWORD: "password123"
+            POSTGRES_DB: "currencydb"
+        hostname: sql1
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+            interval: 10s
+            retries: 10
+            start_period: 10s
+            timeout: 3s
+        networks:
+            - internal-net
+          
+    pgadmin:
+        image: dpage/pgadmin4
+        restart: always
+        environment:
+            PGADMIN_DEFAULT_EMAIL: user@example.com
+            PGADMIN_DEFAULT_PASSWORD: securepassword
+        ports:
+            - "80:80"
+        depends_on:
+            postgres:
+                condition: service_healthy
+        networks:
+            - internal-net
+            - exposed
+
+    fluent-migrator:
+        environment:
+            - ConnectionStrings__DefaultConnection=Server=sql1;Database=currencydb;User ID=user;Password="password123";TrustServerCertificate=true
+        depends_on:
+            postgres:
+                condition: service_healthy
+        build: 
+            context: .
+            dockerfile: ./CurrencyTracking.Migrator/Dockerfile
+        networks:
+            - internal-net
+        
+    user-api:
+        environment:
+            - ConnectionStrings__DefaultConnection=Server=sql1;Database=currencydb;User ID=user;Password=password123;TrustServerCertificate=true
+            - ASPNETCORE_HTTP_PORTS=8085
+            - ASPNETCORE_ENVIRONMENT=Development
+        depends_on:
+            postgres:
+                condition: service_healthy
+            fluent-migrator:
+                condition: service_completed_successfully
+            keycloak:
+                condition: service_healthy
+        build: 
+            context: .
+            dockerfile: ./CurrencyTracking.UserApi/Dockerfile
+        networks:
+            - internal-net
+
+    currency-api:
+        environment:
+            - ConnectionStrings__DefaultConnection=Server=sql1;Database=currencydb;User ID=user;Password=password123;TrustServerCertificate=true
+            - ASPNETCORE_HTTP_PORTS=8086
+            - ASPNETCORE_ENVIRONMENT=Development
+        depends_on:
+            postgres:
+                condition: service_healthy
+            fluent-migrator:
+                condition: service_completed_successfully
+            keycloak:
+                condition: service_healthy
+        build: 
+            context: .
+            dockerfile: ./CurrencyTracking.CurrencyApi/Dockerfile
+        networks:
+            - internal-net
+
+    currency-update-worker:
+        environment:
+            - ConnectionStrings__DefaultConnection=Server=sql1;Database=currencydb;User ID=user;Password=password123;TrustServerCertificate=true
+            - ASPNETCORE_HTTP_PORTS=8080
+            - ASPNETCORE_ENVIRONMENT=Development
+        depends_on:
+            postgres:
+                condition: service_healthy
+            fluent-migrator:
+                condition: service_completed_successfully
+            keycloak:
+                condition: service_healthy
+        build: 
+            context: .
+            dockerfile: ./CurrencyTracking.CurrencyUpdateWorker/Dockerfile
+        networks:
+            - internal-net
+            - exposed
+            
+    api-gateway:
+        environment:
+            - ConnectionStrings__DefaultConnection=Server=sql1;Database=currencydb;User ID=user;Password=password123;TrustServerCertificate=true
+            - ASPNETCORE_HTTP_PORTS=8080
+            - ASPNETCORE_ENVIRONMENT=Development
+        depends_on:
+            postgres:
+                condition: service_healthy
+            fluent-migrator:
+                condition: service_completed_successfully
+            keycloak:
+                condition: service_healthy
+        build: 
+            context: .
+            dockerfile: ./CurrencyTracking.ApiGateway/Dockerfile
+        ports:
+            - 8080:8080
+        networks:
+            - internal-net
+            - exposed
+
+    keycloak:
+        image: keycloak/keycloak:latest
+        volumes:
+            - ./Keycloak/imports:/opt/keycloak/data/import
+        command: start-dev --import-realm
+        hostname: keycloak
+        environment:
+            DB_VENDOR: POSTGRES
+            DB_ADDR: sql1
+            DB_DATABASE: currencydb
+            DB_USER: user
+            DB_PASSWORD: password123
+            KEYCLOAK_USER: administrat0r
+            KEYCLOAK_PASSWORD: asc88a8c0ssssqs
+            KC_BOOTSTRAP_ADMIN_USERNAME: admin 
+            KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+            KC_HTTP_MANAGEMENT_PORT: 9000 
+            KC_HEALTH_ENABLED: true
+        depends_on:
+            postgres:
+                condition: service_healthy
+            fluent-migrator:
+                condition: service_completed_successfully
+        healthcheck:
+          test: [
+            "CMD-SHELL",
+            "exec 3<>/dev/tcp/localhost/9000; \
+            echo -en 'GET /health/ready' >&3; \
+            # Give the server a moment to respond, then search for 'UP'
+            if timeout 3 cat <&3 | grep -m 1 'UP'; then \
+              exec 3<&-; exec 3>&-; exit 0; \
+            else \
+              exec 3<&-; exec 3>&-; exit 1; \
+            fi"
+          ]
+          start_period: 10s
+          interval: 5s
+          timeout: 2s
+          retries: 20
+        restart: always
+        ports:
+            - 8081:8080
+        networks:
+            - internal-net
+            - exposed
+
+networks:
+    internal-net:
+        internal: true
+    exposed:

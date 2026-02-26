@@ -1,7 +1,6 @@
 using CurrencyTracking.CurrencyService.Data;
 using CurrencyTracking.CurrencyService.Handlers;
 using CurrencyTracking.CurrencyService.Queries;
-using CurrencyTracking.CurrencyServiceTests.Mocks;
 using CurrencyTracking.Entities.DbModels;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,10 +12,10 @@ public class GetCurrenciesQueryHandlerTests
 	public async Task Handle_UserExists_ReturnsFavorites()
 	{
 		// Arrange
-		var contextOptions = new DbContextOptionsBuilder<CurrencyContextMock>()
+		var contextOptions = new DbContextOptionsBuilder<CurrencyContext>()
 			.UseInMemoryDatabase($"InMemDb{Guid.NewGuid()}")
 			.Options;
-		var context = new CurrencyContextMock(contextOptions);
+		var context = new CurrencyContext(contextOptions);
 
 		var currency = new Currency
 		{
@@ -46,7 +45,7 @@ public class GetCurrenciesQueryHandlerTests
 		};
 
 		var result = await handler.Handle(request, CancellationToken.None);
-		
+
 		// Assert
 		var expectedId = currency.Id;
 		Assert.NotNull(result);

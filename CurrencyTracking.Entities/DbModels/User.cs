@@ -2,6 +2,7 @@
 
 namespace CurrencyTracking.Entities.DbModels;
 
+[Table("users")]
 public class User
 {
 	[Column("id")]
@@ -11,7 +12,7 @@ public class User
 	public string Name { get; set; } = string.Empty;
 
 	[Column("password")]
-	public string PasswordHash {  get; set; }= string.Empty;
+	public string PasswordHash { get; set; } = string.Empty;
 
 	public IQueryable<UserFavorite> Favorites { get; set; }
 }

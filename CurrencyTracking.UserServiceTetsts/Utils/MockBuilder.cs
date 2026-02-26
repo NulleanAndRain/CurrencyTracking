@@ -1,14 +1,12 @@
-﻿using CurrencyTracking.UserService.Utils;
+﻿using CurrencyTracking.UserService.Queries;
+using CurrencyTracking.UserService.Services;
+using CurrencyTracking.UserService.Utils;
+using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
-using System.Net.Http.Json;
 using System.Net;
-using Keycloak.AuthServices.Sdk.Admin;
-using Keycloak.AuthServices.Sdk.Admin.Models;
-using MediatR;
-using CurrencyTracking.UserService.Queries;
 
 namespace CurrencyTracking.UserServiceTetsts.Utils;
 
@@ -36,7 +34,7 @@ public static class MockBuilder
 		return loggerMock.Object;
 	}
 
-	public static (IHttpClientFactory, Mock<HttpMessageHandler>) GetHttpClientFactoryMock(string returnValue)
+	public static (IHttpClientFactory, Mock<HttpMessageHandler>) GetHttpClientFactoryMock(string returnValue, string locationHeaderEnd = "")
 	{
 		var handlerMock = new Mock<HttpMessageHandler>();
 		handlerMock
@@ -49,6 +47,10 @@ public static class MockBuilder
 			{
 				StatusCode = HttpStatusCode.OK,
 				Content = new StringContent(returnValue),
+				Headers =
+				{
+					Location = new Uri($"{TestUri}/test/{locationHeaderEnd}")
+				}
 			})
 			.Verifiable();
 
@@ -62,25 +64,20 @@ public static class MockBuilder
 		return (factoryMock.Object, handlerMock);
 	}
 
-	public static IKeycloakUserClient GetKeycloakUserClientMock(Guid userId)
-	{
-		var responseUri = new Uri($"{TestUri}/test/{userId}");
-		var returnMessage = new HttpResponseMessage
-		{
-			StatusCode = HttpStatusCode.OK,
-			Headers = { Location = responseUri }
-		};
-		var clientMock = new Mock<IKeycloakUserClient>();
-		clientMock.Setup(x => x.CreateUserWithResponseAsync(It.IsAny<string>(), It.IsAny<UserRepresentation>(), It.IsAny<CancellationToken>()))
-			.ReturnsAsync(returnMessage);
-		return clientMock.Object;
-	}
-
 	public static IMediator GetMediatorMock(bool result)
 	{
 		var mediatorMock = new Mock<IMediator>();
 		mediatorMock.Setup(x => x.Send(It.IsAny<IsUserExistQuery>(), It.IsAny<CancellationToken>()))
 			.ReturnsAsync(result);
 		return mediatorMock.Object;
+	}
+
+	public static IKeycloakTokenService GetTokenServiceMock(string token)
+	{
+		var tokenServiceMock = new Mock<IKeycloakTokenService>();
+		tokenServiceMock.Setup(x => x.GetKeycloakTokenAsync())
+			.ReturnsAsync(token);
+
+		return tokenServiceMock.Object;
 	}
 }

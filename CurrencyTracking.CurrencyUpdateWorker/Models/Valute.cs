@@ -19,10 +19,10 @@ public class Valute
 	public string Name { get; set; }
 
 	[XmlElement(ElementName = "Value")]
-	public double Value { get; set; }
+	public string Value { get; set; }
 
 	[XmlElement(ElementName = "VunitRate")]
-	public decimal VunitRate { get; set; }
+	public string VunitRate { get; set; }
 
 	[XmlAttribute(AttributeName = "ID")]
 	public string ID { get; set; }

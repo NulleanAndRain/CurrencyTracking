@@ -18,8 +18,8 @@ public class LogoutQueryHandler(
 
 		var dict = new Dictionary<string, string>
 		{
-			{ "client_id", "my-backend-client" },
-			{ "refresh_token", request.RefreshToken } 
+			{ "client_id", configuration.GetClientId() },
+			{ "refresh_token", request.RefreshToken }
 		};
 
 		var content = new FormUrlEncodedContent(dict);

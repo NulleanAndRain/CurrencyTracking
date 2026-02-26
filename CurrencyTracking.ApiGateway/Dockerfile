@@ -4,25 +4,27 @@
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 USER $APP_UID
 WORKDIR /app
+EXPOSE 8080
+EXPOSE 8081
 
 
 # Этот этап используется для сборки проекта службы
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["CurrencyTracking.CurrencyUpdateWorker/CurrencyTracking.CurrencyUpdateWorker.csproj", "CurrencyTracking.CurrencyUpdateWorker/"]
-RUN dotnet restore "./CurrencyTracking.CurrencyUpdateWorker/CurrencyTracking.CurrencyUpdateWorker.csproj"
+COPY ["CurrencyTracking.ApiGateway/CurrencyTracking.ApiGateway.csproj", "CurrencyTracking.ApiGateway/"]
+RUN dotnet restore "./CurrencyTracking.ApiGateway/CurrencyTracking.ApiGateway.csproj"
 COPY . .
-WORKDIR "/src/CurrencyTracking.CurrencyUpdateWorker"
-RUN dotnet build "./CurrencyTracking.CurrencyUpdateWorker.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "/src/CurrencyTracking.ApiGateway"
+RUN dotnet build "./CurrencyTracking.ApiGateway.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # Этот этап используется для публикации проекта службы, который будет скопирован на последний этап
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./CurrencyTracking.CurrencyUpdateWorker.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./CurrencyTracking.ApiGateway.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # Этот этап используется в рабочей среде или при запуске из VS в обычном режиме (по умолчанию, когда конфигурация отладки не используется)
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "CurrencyTracking.CurrencyUpdateWorker.dll"]
+ENTRYPOINT ["dotnet", "CurrencyTracking.ApiGateway.dll"]

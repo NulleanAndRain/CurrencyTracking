@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>dotnet-CurrencyTracking.Migrator-c8395826-9cbb-42b1-9921-e3536af8512e</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Migrations\20260224141430_Init\20260224141430_Init_Down.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\20260224141430_Init\20260224141430_Init_Up.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentMigrator" Version="8.0.1" />
+    <PackageReference Include="FluentMigrator.Abstractions" Version="8.0.1" />
+    <PackageReference Include="FluentMigrator.Generator" Version="1.0.5">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="FluentMigrator.Runner.Postgres" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.1" />
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
+    <PackageReference Include="Npgsql" Version="10.0.1" />
+  </ItemGroup>
+</Project>

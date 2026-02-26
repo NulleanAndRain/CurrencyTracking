@@ -2,6 +2,7 @@
 using CurrencyTracking.UserApi.Validation;
 using CurrencyTracking.UserService.Commands;
 using CurrencyTracking.UserService.Exceptions;
+using CurrencyTracking.UserService.Models;
 using CurrencyTracking.UserService.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -13,10 +14,11 @@ namespace CurrencyTracking.UserApi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[AllowAnonymous]
 public class UserController(ILogger<UserController> logger, IMediator mediator) : Controller
 {
 	[HttpPost("register")]
-	public async Task<Results<Ok<string>, BadRequest<ProblemDetails>>> Register([FromBody] RegisterModel model, CancellationToken cancellationToken)
+	public async Task<Results<Ok<JwtModel>, BadRequest<ProblemDetails>>> Register([FromBody] RegisterModel model, CancellationToken cancellationToken)
 	{
 		var validator = new UserRegisterValidator(mediator);
 		var validationResult = await validator.ValidateAsync(model, cancellationToken);
@@ -58,40 +60,48 @@ public class UserController(ILogger<UserController> logger, IMediator mediator) 
 		}
 		catch (PasswordsDoNotMatchException ex)
 		{
+			var msg = $"Произошла ошибка во время регистрации | {nameof(PasswordsDoNotMatchException)}";
+			logger.LogError(ex, msg);
 			return TypedResults.BadRequest(GetLoginProblem(ex));
 		}
 		catch (LoginException ex)
 		{
+			var msg = $"Произошла ошибка во время регистрации | {nameof(LoginException)}";
+			logger.LogError(ex, msg);
 			return TypedResults.BadRequest(GetLoginProblem(ex));
 		}
 		catch (UserNotFoundException ex)
 		{
+			var msg = "Произошла ошибка во время регистрации";
 			var problem = new ProblemDetails
 			{
 				Type = ex.GetType().Name,
 				Status = (int)HttpStatusCode.BadRequest,
-				Title = "Произошла ошибка во время регистрации",
-				Detail = "Произошла ошибка во время регистрации",
+				Title = msg,
+				Detail = msg,
 				Instance = HttpContext.Request.Path
 			};
+			logger.LogError(ex, msg);
 			return TypedResults.BadRequest(problem);
 		}
-		catch
+		catch (Exception ex)
 		{
+			var msg = "Произошла неизвестная ошибка во время регистрации";
 			var problem = new ProblemDetails
 			{
 				Type = "UntypedRegistrationException",
 				Status = (int)HttpStatusCode.BadRequest,
-				Title = "Произошла неизвестная ошибка во время регистрации",
-				Detail = "Произошла неизвестная ошибка во время регистрации",
+				Title = msg,
+				Detail = msg,
 				Instance = HttpContext.Request.Path
 			};
+			logger.LogError(ex, msg);
 			return TypedResults.BadRequest(problem);
 		}
 	}
 
 	[HttpPost("login")]
-	public async Task<Results<Ok<string>, BadRequest<ProblemDetails>>> Login([FromBody] LoginModel model, CancellationToken cancellationToken)
+	public async Task<Results<Ok<JwtModel>, BadRequest<ProblemDetails>>> Login([FromBody] LoginModel model, CancellationToken cancellationToken)
 	{
 		var validator = new UserLoginValidator(mediator);
 		var validationResult = await validator.ValidateAsync(model, cancellationToken);
@@ -120,37 +130,44 @@ public class UserController(ILogger<UserController> logger, IMediator mediator) 
 				Name = model.Name,
 				Password = model.Password,
 			};
-			var res = await mediator.Send(query, cancellationToken);
-			return TypedResults.Ok(res);
+			var token = await mediator.Send(query, cancellationToken);
+			return TypedResults.Ok(token);
 		}
 		catch (PasswordsDoNotMatchException ex)
 		{
+			var msg = $"Произошла ошибка во время входа | {nameof(PasswordsDoNotMatchException)}";
+			logger.LogError(ex, msg);
 			return TypedResults.BadRequest(GetLoginProblem(ex, "Неверный пароль"));
 		}
 		catch (LoginException ex)
 		{
+			var msg = $"Произошла ошибка во время входа | {nameof(PasswordsDoNotMatchException)}";
+			logger.LogError(ex, msg);
 			return TypedResults.BadRequest(GetLoginProblem(ex));
 		}
 		catch (UserNotFoundException ex)
 		{
+			var msg = $"Произошла ошибка во время входа | {nameof(PasswordsDoNotMatchException)}";
+			logger.LogError(ex, msg);
 			return TypedResults.BadRequest(GetLoginProblem(ex, "Пользователь не найден"));
 		}
-		catch
+		catch (Exception ex)
 		{
+			var msg = "Произошла неизвестная ошибка во время входа";
 			var problem = new ProblemDetails
 			{
 				Type = "UntypedLoginException",
 				Status = (int)HttpStatusCode.BadRequest,
-				Title = "Произошла неизвестная ошибка во время входа",
-				Detail = "Произошла неизвестная ошибка во время входа",
+				Title = msg,
+				Detail = msg,
 				Instance = HttpContext.Request.Path
 			};
+			logger.LogError(ex, msg);
 			return TypedResults.BadRequest(problem);
 		}
 	}
 
 	[HttpPost("logout")]
-	[Authorize]
 	public async Task<Results<Ok, BadRequest<ProblemDetails>>> Logout([FromBody] LogoutModel model, CancellationToken cancellationToken)
 	{
 		try
@@ -163,16 +180,18 @@ public class UserController(ILogger<UserController> logger, IMediator mediator) 
 
 			return TypedResults.Ok();
 		}
-		catch (Exception)
+		catch (Exception ex)
 		{
+			var msg = "Произошла ошибка во время выхода";
 			var problem = new ProblemDetails
 			{
 				Type = nameof(LogoutException),
 				Status = (int)HttpStatusCode.BadRequest,
-				Title = "Произошла ошибка во время выхода",
-				Detail = "Произошла ошибка во время выхода",
+				Title = msg,
+				Detail = msg,
 				Instance = HttpContext.Request.Path
 			};
+			logger.LogError(ex, msg);
 			return TypedResults.BadRequest(problem);
 		}
 	}

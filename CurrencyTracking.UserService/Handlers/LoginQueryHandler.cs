@@ -1,11 +1,13 @@
 ﻿using CurrencyTracking.UserService.Data;
 using CurrencyTracking.UserService.Exceptions;
+using CurrencyTracking.UserService.Models;
 using CurrencyTracking.UserService.Queries;
 using CurrencyTracking.UserService.Utils;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace CurrencyTracking.UserService.Handlers;
 
@@ -13,9 +15,9 @@ public class LoginQueryHandler(
 	IUserContext userContext,
 	IConfiguration configuration,
 	IHttpClientFactory httpClientFactory,
-	ILogger<LoginQueryHandler> logger) : IRequestHandler<LoginQuery, string>
+	ILogger<LoginQueryHandler> logger) : IRequestHandler<LoginQuery, JwtModel>
 {
-	public async Task<string> Handle(LoginQuery request, CancellationToken cancellationToken)
+	public async Task<JwtModel> Handle(LoginQuery request, CancellationToken cancellationToken)
 	{
 		var user = userContext.Users.AsNoTracking().FirstOrDefault(x => x.Name == request.Name);
 		if (user == null)
@@ -31,12 +33,12 @@ public class LoginQueryHandler(
 		}
 
 		var httpClient = httpClientFactory.CreateClient(nameof(LoginQueryHandler));
-		
+
 		var dict = new Dictionary<string, string>
 		{
 			{ "grant_type", "password" },
-			{ "client_id", "my-backend-client" },
-            { "username", request.Name },
+			{ "client_id", configuration.GetClientId() },
+			{ "username", request.Name },
 			{ "password", request.Password },
 			{ "scope", "openid" }
 		};
@@ -46,9 +48,10 @@ public class LoginQueryHandler(
 
 		if (!response.IsSuccessStatusCode)
 		{
+			logger.LogWarning("User did not authorized in Keycloak");
 			throw new LoginException();
 		}
 
-		return await response.Content.ReadAsStringAsync();
+		return JsonSerializer.Deserialize<JwtModel>(await response.Content.ReadAsStringAsync())!;
 	}
 }

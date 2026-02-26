@@ -3,6 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CurrencyTracking.Entities.DbModels;
 
+[Table("currencies")]
 public class Currency
 {
 	[Column("id")]

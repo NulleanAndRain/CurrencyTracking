@@ -1,8 +1,8 @@
 ﻿using CurrencyTracking.UserService.Handlers;
 using CurrencyTracking.UserService.Queries;
 using CurrencyTracking.UserServiceTetsts.Utils;
-using Moq.Protected;
 using Moq;
+using Moq.Protected;
 
 namespace CurrencyTracking.UserServiceTetsts.UnitTests;
 

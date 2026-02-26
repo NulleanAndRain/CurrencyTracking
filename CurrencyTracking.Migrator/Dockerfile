@@ -10,19 +10,19 @@ WORKDIR /app
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["CurrencyTracking.BackgroundWorkers.CurrencyUpdater/CurrencyTracking.BackgroundWorkers.CurrencyUpdater.csproj", "CurrencyTracking.BackgroundWorkers.CurrencyUpdater/"]
-RUN dotnet restore "./CurrencyTracking.BackgroundWorkers.CurrencyUpdater/CurrencyTracking.BackgroundWorkers.CurrencyUpdater.csproj"
+COPY ["CurrencyTracking.Migrator/CurrencyTracking.Migrator.csproj", "CurrencyTracking.Migrator/"]
+RUN dotnet restore "./CurrencyTracking.Migrator/CurrencyTracking.Migrator.csproj"
 COPY . .
-WORKDIR "/src/CurrencyTracking.BackgroundWorkers.CurrencyUpdater"
-RUN dotnet build "./CurrencyTracking.BackgroundWorkers.CurrencyUpdater.csproj" -c $BUILD_CONFIGURATION -o /app/build
+WORKDIR "/src/CurrencyTracking.Migrator"
+RUN dotnet build "./CurrencyTracking.Migrator.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # Этот этап используется для публикации проекта службы, который будет скопирован на последний этап
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./CurrencyTracking.BackgroundWorkers.CurrencyUpdater.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./CurrencyTracking.Migrator.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # Этот этап используется в рабочей среде или при запуске из VS в обычном режиме (по умолчанию, когда конфигурация отладки не используется)
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "CurrencyTracking.BackgroundWorkers.CurrencyUpdater.dll"]
+ENTRYPOINT ["dotnet", "CurrencyTracking.Migrator.dll"]

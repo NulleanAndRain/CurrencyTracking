@@ -1,9 +1,10 @@
 ﻿using CurrencyTracking.UserService.Data;
+using CurrencyTracking.UserService.Services;
+using CurrencyTracking.UserService.Utils;
 using Keycloak.AuthServices.Authentication;
+using Keycloak.AuthServices.Authorization;
 using Keycloak.AuthServices.Sdk;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection;
 
 namespace CurrencyTracking.UserApi.Infrastructure;
 
@@ -13,9 +14,17 @@ public static class DependencyInjectionBuilder
 	{
 		var services = builder.Services;
 
+		services.AddHttpClient();
 		services.AddControllers();
 		services.AddEndpointsApiExplorer();
 		services.AddSwaggerGen();
+
+		services.AddLogging(cfg =>
+		{
+			cfg.AddConsole();
+			cfg.AddDebug();
+			cfg.SetMinimumLevel(LogLevel.Debug);
+		});
 
 		services.AddScoped<IUserContext, UserContext>();
 		services.AddDbContext<UserContext>(o =>
@@ -24,12 +33,28 @@ public static class DependencyInjectionBuilder
 				x => x.MigrationsAssembly("CurrencyTracking.Migrations"));
 		});
 
+		services.AddSingleton<IKeycloakTokenService, KeycloakTokenService>();
+
 		services.AddMediatR(cfg =>
 		{
-			cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly());
+			cfg.RegisterServicesFromAssemblies(AppDomain.CurrentDomain.GetAssemblies());
 		});
 
-		services.AddKeycloakWebApiAuthentication(builder.Configuration);
+		services.AddKeycloakWebApiAuthentication(builder.Configuration, cfg =>
+		{
+			cfg.Authority = builder.Configuration.GetAuthority();
+			cfg.Audience = builder.Configuration.GetClientId();
+			cfg.RequireHttpsMetadata = false;
+			cfg.MetadataAddress = $"{builder.Configuration.GetAuthority()}/.well-known/openid-configuration";
+		});
+		services.AddAuthorization()
+			.AddCookiePolicy(o =>
+			{
+				o.MinimumSameSitePolicy = SameSiteMode.None;
+			})
+			.AddKeycloakAuthorization(builder.Configuration)
+			.AddAuthorizationServer(builder.Configuration);
+
 		services.AddKeycloakAdminHttpClient(builder.Configuration);
 
 		return services;

@@ -12,4 +12,11 @@ public class CurrencyContext : DbContext, ICurrencyContext, IDisposable
 	{
 		Database.EnsureCreated();
 	}
+
+	protected override void OnModelCreating(ModelBuilder modelBuilder)
+	{
+		modelBuilder.Entity<UserFavorite>()
+			.HasKey(e => new { e.UserId, e.CurrencyId });
+		base.OnModelCreating(modelBuilder);
+	}
 }

@@ -3,7 +3,7 @@ using CurrencyTracking.CurrencyUpdateWorker.Models;
 using CurrencyTracking.Entities.DbModels;
 using Microsoft.EntityFrameworkCore;
 using Quartz;
-using System.Xml;
+using System.Globalization;
 using System.Xml.Serialization;
 
 namespace CurrencyTracking.CurrencyUpdateWorker.Jobs;
@@ -16,7 +16,7 @@ public class CurrencyUpdaterJob(
 {
 	public async Task Execute(IJobExecutionContext context)
 	{
-		logger.LogInformation($"{nameof(CurrencyUpdaterJob)} started");
+		logger.LogInformation($"Job {nameof(CurrencyUpdaterJob)} started");
 
 		var url = configuration["CbrUrl"]!;
 		var httpClient = httpClientFactory.CreateClient();
@@ -30,11 +30,13 @@ public class CurrencyUpdaterJob(
 		{
 			Id = x.ID,
 			Name = x.Name,
-			Rate = x.VunitRate
+			Rate = decimal.Parse(x.VunitRate.Replace(',', '.'),
+				NumberStyles.Float,
+				CultureInfo.InvariantCulture)
 		}).ToList();
 
 		var currenciesInDb = await currencyContext.Currencies.ToListAsync();
-		
+
 		var notPresent = currenciesList.Where(x => !currenciesInDb.Any(d => x.Id == d.Id));
 		await currencyContext.Currencies.AddRangeAsync(notPresent);
 
