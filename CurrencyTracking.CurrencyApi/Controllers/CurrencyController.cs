@@ -14,7 +14,7 @@ public class CurrencyController(ILogger<CurrencyController> logger, IMediator me
 {
 	[Authorize]
 	[HttpGet("favorites")]
-	public async Task<Results<Ok<IEnumerable<Currency>>, UnauthorizedHttpResult>> Get(CancellationToken cancellationToken)
+	public async Task<Results<Ok<CurrencyFavoritesResponse>, UnauthorizedHttpResult>> Get(CancellationToken cancellationToken)
 	{
 		logger.LogInformation("list tracked currencuies");
 
@@ -28,6 +28,8 @@ public class CurrencyController(ILogger<CurrencyController> logger, IMediator me
 		var query = new GetCurrenciesQuery { UserId = userId };
 		var result = await mediator.Send(query, cancellationToken);
 
-		return TypedResults.Ok(result);
+		return TypedResults.Ok(new CurrencyFavoritesResponse {
+			Data = result
+		});
 	}
 }
